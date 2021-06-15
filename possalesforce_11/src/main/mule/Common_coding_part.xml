@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="a351e67e-3183-43b0-9210-eabb84fe6d31" >
+		<salesforce:basic-connection username="prakash@yeddu.com" password="Prakkii448*" securityToken="2Iy1kS5QsV6JRrOHk99sOCeg" />
+	</salesforce:sfdc-config>
+	<flow name="Query_select" doc:id="c4eb2e9b-0267-4d96-b366-abc1a13c18b1" >
+		<logger level="INFO" doc:name="Logger" doc:id="869fb1e4-6799-4f32-a91a-25a81eb30c51" message="fetch the sf details"/>
+		<salesforce:query doc:name="Query" doc:id="d85933a8-de0c-4516-9eb9-13e976042237" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, TechMname__c, TechMID__c, Skill__c FROM TechM__c where Id =':xyz']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	xyz : attributes.queryParams.ID
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="a229c7ea-016c-4904-b489-1f29c907560f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="Common-Error_Handler-Salesforce" />
+	</flow>
+	<flow name="upsert_post_put" doc:id="af1a56d4-19d5-4fa8-8e46-ce096a0cf637" >
+		<logger level="INFO" doc:name="Logger" doc:id="20bc86f2-e292-487e-971a-537ffe1eb9e3" message="post and put process"/>
+		<ee:transform doc:name="Transform Message" doc:id="e0d769b8-028d-4a09-89a1-b43596350df7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map
+{
+	TechMID__c : $.id,
+	TechMname__c : $.name,
+	Skill__c  : $.skill
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:upsert doc:name="Upsert" doc:id="4a3188a0-0a42-4bb6-b95f-1b13deb28c76" config-ref="Salesforce_Config" objectType="TechM__c" externalIdFieldName="TechMID__c"/>
+		<ee:transform doc:name="Transform Message" doc:id="7d9d4c8d-40a8-4cbc-9cd0-4acae08f270d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="Common-Error_Handler-Salesforce" />
+	</flow>
+	<flow name="deleteflow" doc:id="1b040003-76e1-4ee7-ae16-5403bd53800b" >
+		<logger level="INFO" doc:name="Logger" doc:id="c4c68e6c-70ec-4d64-8153-0e2a18092147" message="delete the task"/>
+		<ee:transform doc:name="Transform Message" doc:id="1ddde582-784b-4abb-b6dc-39dfa3d0cbf7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map{
+	TechMID__c : $.id
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:delete doc:name="Delete" doc:id="e17f1f2a-8e13-4a4f-ba3e-1cc75bb92261" config-ref="Salesforce_Config">
+			<salesforce:ids ><![CDATA[#[payload.TechMID__c]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="Transform Message" doc:id="5c168dbe-5eb8-464f-8677-fdd79aff0405" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"result" : "task deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="Common-Error_Handler-Salesforce" />
+	</flow>
+</mule>

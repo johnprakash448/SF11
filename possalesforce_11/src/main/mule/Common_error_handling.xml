@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<error-handler name="Common-Error_Handler-Salesforce">
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="576eea3c-4c95-4779-9015-b48f600b889e" type="SALESFORCE:CONNECTIVITY">
+				<set-variable value="401" doc:name="Set Variable" doc:id="9d4cbffd-fcbb-450c-963c-d855be6b6745" variableName="httpStatus"/>
+				<logger level="INFO" doc:name="Logger" doc:id="111dabf7-f1a5-4164-9363-16933b1cc048" message="#[payload]"/>
+				<ee:transform doc:name="Transform Message" doc:id="07526020-2464-46ba-bec7-9692d910d6e4" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"errorcode": 401,
+	"errortype" : "Connectivity issue"
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2cf5272c-871e-44da-9747-74a1624cd881" type="SALESFORCE:INVALID_INPUT">
+			<set-variable value="402" doc:name="Set Variable" doc:id="49d9bd40-6664-41ff-8831-4b822c285441" variableName="httpStatus"/>
+			<logger level="INFO" doc:name="Logger" doc:id="6d643f3f-c713-4fb0-a8c9-deffd0c14254" message="#[payload]"/>
+			<ee:transform doc:name="Transform Message" doc:id="659f1023-ad66-4111-8783-e113e1d3c779" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"errorcode": 402,
+	"errortype" : "invalid input"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d634aecc-4457-41e7-a640-32b8e46465ce" type="ANY">
+			<set-variable value="403" doc:name="Set Variable" doc:id="effc2f5e-f711-4809-8cd5-2f9f852927d6" variableName="httpStatus"/>
+			<logger level="INFO" doc:name="Logger" doc:id="76453fd7-8698-4b96-a27b-3318f1e51422" message="#[payload]"/>
+			<ee:transform doc:name="Transform Message" doc:id="306ca315-afc9-4f9f-90df-465ea2a31254" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"errorcode": 403,
+	"errortype" : "expresssion error found"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		
+</error-handler>
+	</mule>

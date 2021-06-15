@@ -1,0 +1,58 @@
+#%RAML 1.0
+title: POC-salesforce-1
+traits:
+  config_hed:
+    headers:
+      client_secret:
+        type: string
+        required: true
+      client_id:
+        type: string
+        required: true 
+/Item:
+  get:
+    is:
+      - config_hed
+    description: "fetch the salesforce details"
+    queryParameters:
+      ID :
+        required: true
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include Get.json
+  post:
+    is:
+      - config_hed
+    body:
+      application/json:
+        example: !include postreqqq.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include postresponce.json
+  put:
+    is:
+      - config_hed
+    body:
+      application/json:
+        example: !include putreqqq.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include putresponce.json
+  delete:
+    is:
+      - config_hed
+    body:
+      application/json:
+        example: !include delete.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include deleterespon.json
+              
